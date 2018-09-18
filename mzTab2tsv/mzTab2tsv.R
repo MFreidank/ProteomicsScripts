@@ -20,7 +20,7 @@ options(digits=10)
 FcCutoff <- 8    # fold change cutoff, i.e. infinite fc values are mapped to +/-FcCutoff
 
 # use the stripped or modified sequence in makeSequencesUnique()
-stripped = FALSE                        
+# stripped = FALSE                        
 
 # Biognosys iRT spike-in peptides
 peptides.of.interest <- c("LGGNEQVTR", "GAGSSEPVTGLDAK", "VEATFGVDESNAK", "YILAGVENSK", "TPVISGGPYEYR", "TPVITGAPYEYR", "DGLDAASYYAPVR", "ADVTPADFSEWSK", "GTFIIDPGGVIR", "GTFIIDPAAVIR", "LFLQFGAQGSPFLK")
@@ -403,7 +403,9 @@ createModsSummary <- function(data)
 
 # returns index of the best quantification with this sequence
 # requires a 'sequence' and 'intensity' column in data frame 'data'
-indexMaxIntensity <- function(sequence, data) {
+# use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
+indexMaxIntensity <- function(sequence, data, stripped=FALSE) {
+  print(stripped)
   if (stripped)
   {
     idx <- which(data$sequence==sequence)
@@ -418,7 +420,9 @@ indexMaxIntensity <- function(sequence, data) {
 }
 
 # makes the sequences unique by picking the quants with maximum intensity
-makeSequencesUnique <- function(peptide.data) {
+# use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
+makeSequencesUnique <- function(peptide.data, stripped=FALSE) {
+  print(stripped)
   if (stripped)
   {
     unique.sequences <- unique(peptide.data$sequence)
@@ -427,7 +431,7 @@ makeSequencesUnique <- function(peptide.data) {
   {
     unique.sequences <- unique(peptide.data$opt_global_modified_sequence)
   }
-  idx <- unlist(lapply(unique.sequences, FUN=indexMaxIntensity, data = peptide.data))
+  idx <- unlist(lapply(unique.sequences, FUN=function(sequence, data) {return (indexMaxIntensity(sequence=sequence, data=data, stripped=stripped))}, data = peptide.data))
   return(peptide.data[idx,])
 }
 
@@ -479,7 +483,7 @@ peptide.data$intensity <- (peptide.data$"peptide_abundance_study_variable[1]" + 
 # get identified peptides
 # make them unique i.e. if multiple quants for the same sequence exist, keep only the one with the highest intensity
 peptide.data.identified <- peptide.data[which(!is.na(peptide.data$sequence)),]
-peptide.data.unique <- makeSequencesUnique(peptide.data.identified)
+peptide.data.unique <- makeSequencesUnique(peptide.data.identified, stripped=FALSE)
 
 # write unqiue data as tsv
 write.table(peptide.data.unique, output.file, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
