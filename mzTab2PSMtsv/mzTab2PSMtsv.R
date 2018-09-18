@@ -93,17 +93,32 @@ checkEValueExists <- function(table) {
 
 # returns index of the best quantification with this sequence
 # requires a 'opt_global_modified_sequence' and 'search_engine_score[1]' column in data frame 'data'
-indexBest <- function(sequence, data) {
-  idx <- which(data$opt_global_modified_sequence==sequence)
+indexBest <- function(sequence, data, stripped=FALSE) {
+  if (stripped)
+  {
+    idx <- which(data$sequence==sequence)
+  }
+  else
+  {
+    idx <- which(data$opt_global_modified_sequence==sequence)
+  }
   min <- min(as.numeric(as.character(data$`search_engine_score[1]`[idx])))
   idx.m <- which(data[idx,]$`search_engine_score[1]`==min)[1]
   return(idx[idx.m])
 }
 
 # makes the sequences unique by picking the quants with maximum intensity
-makeSequencesUnique <- function(peptide.data) {
-  unique.sequences <- unique(peptide.data$"opt_global_modified_sequence")
-  idx <- unlist(lapply(unique.sequences, FUN=indexBest, data = peptide.data))
+# use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
+makeSequencesUnique <- function(peptide.data, stripped=FALSE) {
+  if (stripped)
+  {
+    unique.sequences <- unique(peptide.data$sequence)
+  }
+  else
+  {
+    unique.sequences <- unique(peptide.data$opt_global_modified_sequence)
+  }
+  idx <- unlist(lapply(unique.sequences, FUN=function(sequence, data) {return (indexBest(sequence=sequence, data=data, stripped=stripped))}, data = peptide.data))
   return(peptide.data[idx,])
 }
 
@@ -139,7 +154,7 @@ makeSequencesUnique <- function(peptide.data) {
 peptide.data <- readMzTabPSM(input.file)
 
 # make sequence unique
-peptide.data <- makeSequencesUnique(peptide.data)
+peptide.data <- makeSequencesUnique(peptide.data, stripped=FALSE)
 
 # write unqiue data as tsv
 write.table(peptide.data, output.file, sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)

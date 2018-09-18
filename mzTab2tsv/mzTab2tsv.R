@@ -405,7 +405,6 @@ createModsSummary <- function(data)
 # requires a 'sequence' and 'intensity' column in data frame 'data'
 # use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
 indexMaxIntensity <- function(sequence, data, stripped=FALSE) {
-  print(stripped)
   if (stripped)
   {
     idx <- which(data$sequence==sequence)
@@ -422,7 +421,6 @@ indexMaxIntensity <- function(sequence, data, stripped=FALSE) {
 # makes the sequences unique by picking the quants with maximum intensity
 # use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
 makeSequencesUnique <- function(peptide.data, stripped=FALSE) {
-  print(stripped)
   if (stripped)
   {
     unique.sequences <- unique(peptide.data$sequence)
