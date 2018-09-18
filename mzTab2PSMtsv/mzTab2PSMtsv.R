@@ -93,7 +93,9 @@ checkEValueExists <- function(table) {
 
 # returns index of the best quantification with this sequence
 # requires a 'opt_global_modified_sequence' and 'search_engine_score[1]' column in data frame 'data'
-indexBest <- function(sequence, data, stripped=FALSE) {
+# use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
+# prefer lower or larger scores based on flag `minimize.score`
+indexBest <- function(sequence, data, stripped=FALSE, minimize.score=TRUE) {
   if (stripped)
   {
     idx <- which(data$sequence==sequence)
@@ -102,14 +104,21 @@ indexBest <- function(sequence, data, stripped=FALSE) {
   {
     idx <- which(data$opt_global_modified_sequence==sequence)
   }
-  min <- min(as.numeric(as.character(data$`search_engine_score[1]`[idx])))
-  idx.m <- which(data[idx,]$`search_engine_score[1]`==min)[1]
+  if (minimize.score) {
+    optimum <- min(as.numeric(as.character(data$`search_engine_score[1]`[idx])))
+  }
+  else
+  {
+    optimum <- max(as.numeric(as.character(data$`search_engine_score[1]`[idx])))
+  }
+  idx.m <- which(data[idx,]$`search_engine_score[1]`==optimum)[1]
   return(idx[idx.m])
 }
 
 # makes the sequences unique by picking the quants with maximum intensity
 # use the stripped or modified sequence in makeSequencesUnique() based on flag `stripped`
-makeSequencesUnique <- function(peptide.data, stripped=FALSE) {
+# prefer lower or larger scores based on flag `minimize.score`
+makeSequencesUnique <- function(peptide.data, stripped=FALSE, minimize.score=TRUE) {
   if (stripped)
   {
     unique.sequences <- unique(peptide.data$sequence)
@@ -118,7 +127,7 @@ makeSequencesUnique <- function(peptide.data, stripped=FALSE) {
   {
     unique.sequences <- unique(peptide.data$opt_global_modified_sequence)
   }
-  idx <- unlist(lapply(unique.sequences, FUN=function(sequence, data) {return (indexBest(sequence=sequence, data=data, stripped=stripped))}, data = peptide.data))
+  idx <- unlist(lapply(unique.sequences, FUN=function(sequence, data) {return (indexBest(sequence=sequence, data=data, stripped=stripped, minimize.score=minimize.score))}, data = peptide.data))
   return(peptide.data[idx,])
 }
 
