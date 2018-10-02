@@ -134,6 +134,7 @@ generatePEP<- function(max_quant_peptides) {
          num_study_variables = length(reporter_intensity_columns)
          intensity_columns = c(max_quant_peptides[reporter_intensity_columns[[1]]], nulls, nulls)
 
+        
          df = data.frame(rep("PEP", nrow(max_quant_peptides)), 
                          max_quant_peptides["Sequence"], 
                          max_quant_peptides["Proteins"],
@@ -159,6 +160,13 @@ generatePEP<- function(max_quant_peptides) {
              df[, stdev_column_name] = nulls
              df[, std_error_column_name] = nulls
          }
+         mztab_column_names = c(mztab_column_names, "opt_global_modified_sequence")
+         df[, "opt_global_modified_sequence"] = max_quant_peptides["Modified.sequence"]
+         df[, "opt_global_modified_sequence"] = gsub("_", "", df[, "opt_global_modified_sequence"])
+         df[, "opt_global_modified_sequence"] = gsub("\\(ac\\)", "(Acetyl)", df[, "opt_global_modified_sequence"])
+         df[, "opt_global_modified_sequence"] = gsub("\\(ox\\)", "(Oxidation)", df[, "opt_global_modified_sequence"])
+         
+         
 
   } else if (analysis == "Labelfree") {
           # Labelfree not yet supported, needs linking of evidence.txt with peptides.txt
